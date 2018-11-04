@@ -2,6 +2,8 @@
 
 #include "ofMain.h"
 #include "ofxAbletonLink.h"
+#include "ofxOsc.h"
+#include "ofxGui.h"
 
 class ofApp : public ofBaseApp{
 	void bpmChanged(double &bpm) {
@@ -30,4 +32,17 @@ class ofApp : public ofBaseApp{
 private:
 		ofxAbletonLink link;
 		double tempo;
+		void HostFieldChanged();
+		// OSC
+		ofxOscSender oscSender;
+		void oscSendMsg(double message, std::string address);
+
+		// GUI
+		ofxPanel gui;
+
+		ofxGuiGroup OSCgroup;
+		ofxIntField oscPort; // Output
+		ofxIntField oscPortIn;
+		ofxTextField HostField;
+
 };

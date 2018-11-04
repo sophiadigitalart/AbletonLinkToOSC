@@ -8,6 +8,23 @@ void ofApp::setup(){
 	ofSetFrameRate(60);
 	ofAddListener(link.bpmChanged, this, &ofApp::bpmChanged);
 	ofAddListener(link.numPeersChanged, this, &ofApp::numPeersChanged);
+
+	string guiFile = "settings.xml";
+	gui.setup("Parameters", guiFile);
+	gui.setHeaderBackgroundColor(ofColor::darkRed);
+	gui.setBorderColor(ofColor::darkRed);
+	//gui.setDefaultWidth(320);
+
+	OSCgroup.setup("OSC");
+	OSCgroup.add(HostField.setup("Host ip", "localhost"));
+	OSCgroup.add(oscPort.setup("Output port", 7000));
+	gui.add(&OSCgroup);
+
+	gui.loadFromFile(guiFile);
+	// OSC setup  * * * * * * * * * * * * *
+//oscSender.disableBroadcast();
+	oscSender.setup(HostField, oscPort);
+
 }
 
 //--------------------------------------------------------------
@@ -15,6 +32,8 @@ void ofApp::update(){
 	
 	if (tempo != link.getBPM()) {
 		tempo = link.getBPM();
+		oscSendMsg(tempo, "/bpm/");
+		
 		//client.send("{\"cmd\" :[{\"type\" : 2,\"tempo\" : " + ofToString(link.tempo()) + "}]}");
 		cout << "sending tempo change" << endl;
 	}
@@ -36,8 +55,25 @@ void ofApp::draw(){
 
 	ofSetColor(255);
 	ofDrawBitmapString(ss.str(), 20, 20);
+	gui.draw();
 }
-
+//--- OSC send message -----------------------------------------------------------
+// Requires the address be wrapped in forward slashes: eg "/status/"
+void ofApp::oscSendMsg(double message, string address)
+{
+	// send OSC message // oscSendMsg("no device","/status/");
+	ofxOscMessage m;
+	m.setAddress(address);
+	m.addDoubleArg(message);
+	oscSender.sendMessage(m);
+}
+//--------------------------------------------------------------
+void ofApp::HostFieldChanged() {
+	cout << "fieldChange" << endl;
+	//oscSender.disableBroadcast();
+	oscSender.setup(HostField, oscPort);
+	cout << "updated" << endl;
+}
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
 	if (key == OF_KEY_LEFT) {
@@ -56,7 +92,10 @@ void ofApp::keyPressed(int key){
 
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key){
-
+	if (key == OF_KEY_RETURN) {
+		cout << "ENTER" << endl;
+		HostFieldChanged();
+	}
 }
 
 //--------------------------------------------------------------
