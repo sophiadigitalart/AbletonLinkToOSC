@@ -31,7 +31,7 @@ class ofApp : public ofBaseApp{
 		void gotMessage(ofMessage msg);
 private:
 		ofxAbletonLink link;
-		double tempo;
+		int phase;
 		void HostFieldChanged();
 		// OSC
 		ofxOscSender oscSender;

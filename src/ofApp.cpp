@@ -30,13 +30,16 @@ void ofApp::setup(){
 //--------------------------------------------------------------
 void ofApp::update(){
 	
-	if (tempo != link.getBPM()) {
-		tempo = link.getBPM();
-		oscSendMsg(tempo, "/bpm/");
-		
-		//client.send("{\"cmd\" :[{\"type\" : 2,\"tempo\" : " + ofToString(link.tempo()) + "}]}");
-		cout << "sending tempo change" << endl;
-	}
+	if (phase != (int)link.getPhase()) {
+		phase = (int)link.getPhase();
+		ofxOscMessage oscMessage;
+		oscMessage.setAddress("/link/");
+		oscMessage.addDoubleArg(link.getBPM());
+		oscMessage.addDoubleArg(link.getBeat());
+		oscMessage.addDoubleArg(link.getPhase());
+		oscSender.sendMessage(oscMessage);
+		cout << "sending OSC: " << phase << endl;
+	}	
 }
 
 //--------------------------------------------------------------
@@ -54,7 +57,7 @@ void ofApp::draw(){
 		<< "peers: " << link.getNumPeers() << std::endl;
 
 	ofSetColor(255);
-	ofDrawBitmapString(ss.str(), 20, 20);
+	ofDrawBitmapString(ss.str(), 20, 120);
 	gui.draw();
 }
 //--- OSC send message -----------------------------------------------------------
